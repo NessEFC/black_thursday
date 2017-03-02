@@ -20,6 +20,7 @@ class InvoiceItemRepositoryTest < Minitest::Test
 
 	def test_all
 		assert_equal 14, iir.all.count
+    assert_instance_of InvoiceItem, iir.all.first
 	end
 
 	def test_find_by_id

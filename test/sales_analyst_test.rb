@@ -1,6 +1,5 @@
 require_relative'test_helper'
 require'./lib/sales_engine'
-require'./lib/merchant'
 require'./lib/sales_analyst'
 
 class SalesEngineTest < Minitest::Test
@@ -80,4 +79,45 @@ class SalesEngineTest < Minitest::Test
 	def test_top_days_by_invoice_count
 		assert_equal ["Friday"], sa.top_days_by_invoice_count
 	end
+
+  def test_average_item_price_per_merchant
+    assert_equal 65.56, sa.item_price_standard_deviation
+    assert_equal 51, sa.average_item_price.to_i
+  end
+
+  def test_average_items_per_merchant_standard_deviation
+    assert_equal 1.08, sa.average_items_per_merchant_standard_deviation
+  end
+
+  def test_merchant_items
+    assert_equal 1.33, sa.average_items_per_merchant
+    assert_equal [2, 1, 0], sa.total_items_each_merchant
+    assert_equal [], sa.merchants_with_high_item_count
+    assert_equal 1.33, sa.average_items_per_merchant
+    assert_equal 29, sa.average_item_price_for_merchant(12334105).to_i
+    assert_equal 263396255, sa.golden_items[0].id
+    assert_equal 12334389, sa.merchants_with_pending_invoices[0].id
+    assert_equal 12334185, sa.merchants_ranked_by_revenue[0].id
+    assert_equal "Shopin1901", sa.merchants_with_only_one_item[0].name
+    assert_equal [0, 0, 0], sa.merchant_totals
+  end
+
+  def test_merchant_invoice
+    assert_equal 0.58, sa.average_invoices_per_merchant_standard_deviation
+    assert_equal [0, 0, 1], sa.total_invoices_of_each_merchant
+    assert_equal "Sunday", sa.find_top_days_by_invoice_count(sa.average_items_per_merchant)[0]
+    assert_equal 2.0, sa.average_invoices_per_day_standard_deviation
+    assert_equal 4.0, sa.average_invoices_created_per_day
+  end
+
+  def test_number_or_status
+    assert_equal 10, sa.number_of_invoices(:pending)
+    assert_equal 17, sa.number_of_invoices(:shipped)
+    assert_equal 1, sa.number_of_invoices(:returned)
+  end
+
+  def test_revenue
+    assert_equal 0, sa.total_revenue_by_date("2013-01-30")
+  end
+  
 end

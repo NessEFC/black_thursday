@@ -1,6 +1,5 @@
 require_relative'test_helper'
 require'./lib/sales_engine'
-require'./lib/merchant'
 
 class SalesEngineTest < Minitest::Test
 	attr_reader :se
@@ -19,8 +18,15 @@ class SalesEngineTest < Minitest::Test
   def test_hash_of_pathnames_can_be_passed_into_sales_engine
 		ir = se.items
 		mr = se.merchants
+		inr = se.invoices
+		iir = se.invoice_items
+		cr = se.customers
+    
     assert_instance_of ItemRepository, ir
     assert_instance_of MerchantRepository, mr
+    assert_instance_of InvoiceRepository, inr
+    assert_instance_of InvoiceItemRepository, iir
+    assert_instance_of CustomerRepository, cr
   end
 
 	def test_merchants_can_find_by_name_from_sales_engine
@@ -33,7 +39,7 @@ class SalesEngineTest < Minitest::Test
 	end
 
 	def test_can_reutrn_all_items_related_to_invoice
-		invoice = se.invoices.find_by_id(20)
+		invoice = se.invoices.find_by_id(9)
 		assert_equal [], invoice.items
 	end
 

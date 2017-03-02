@@ -1,5 +1,3 @@
-require_relative 'merchant_repository'
-require_relative 'item_repository'
 require_relative 'functions'
 
 class SalesAnalyst
@@ -101,7 +99,6 @@ class SalesAnalyst
       se.merchants.all.length
     )
   end
-
 
   def total_invoices_of_each_merchant
     se.merchants.all.map { |merchant| validate_number(merchant.invoices) }
@@ -216,6 +213,73 @@ class SalesAnalyst
     all_merchants.map {
       |merchant| merchant if merchant.items.count == 1
     }.compact.uniq
+  end
+
+  def merchants_with_only_one_item_registered_in_month(month)
+    merchants_with_only_one_item.map do |merchant|
+      if merchant.created_at.strftime("%B") == month
+        merchant
+      end
+    end.compact.uniq
+  end
+
+  def revenue_by_merchant(merchant)
+    merchant_revenues = Hash[all_merchants.zip(merchant_totals)]
+    merchant_revenues[se.merchants.find_by_id(merchant)]
+  end
+
+  def most_sold_item_for_merchant(merchant)
+    all_paid_invoices = paid_invoices(merchant)
+    all_invoice_items = invoice_items_for_all_paid_invoices(all_paid_invoices)
+    highest_quantity_invoice_item = find_max_invoice_item(all_invoice_items, 1)
+    invoice_ties = find_max_invoice_item_quantity_ties(
+      all_invoice_items,
+      highest_quantity_invoice_item
+      )
+    find_item(invoice_ties)
+  end
+
+  def best_item_for_merchant(merchant)
+    all_paid_invoices = paid_invoices(merchant)
+    all_invoice_items = invoice_items_for_all_paid_invoices(all_paid_invoices)
+    best_invoice_item = find_max_invoice_item(all_invoice_items, 2)
+    se.items.find_by_id(best_invoice_item.item_id)
+  end
+
+  def find_item(invoice_items)
+    invoice_items.map do |invoice_item|
+      se.items.find_by_id(invoice_item.item_id)
+    end
+  end
+
+  def find_max_invoice_item_quantity_ties(inv_items, high_quantity_inv_items)
+    inv_items.flatten.select do |invoice_item|
+      invoice_item.quantity == high_quantity_inv_items.quantity
+    end
+  end
+
+  def find_max_invoice_item(invoice_items, number)
+    invoice_items.flatten.max_by do |invoice_item|
+      if number == 1
+        invoice_item.quantity
+      elsif number == 2
+        invoice_item.quantity * invoice_item.unit_price
+      end
+    end
+  end
+
+  def invoice_items_for_all_paid_invoices(invoices)
+    invoices.map do |invoice|
+      se.invoice_items.find_all_by_invoice_id(invoice.id)
+    end
+  end
+
+  def paid_invoices(merchant)
+    se.invoices.find_all_by_merchant_id(merchant).select do |invoice|
+      if invoice.is_paid_in_full?
+        invoice
+      end
+    end.compact
   end
 
 end

@@ -32,4 +32,5 @@ class CustomerRepositoryTest < Minitest::Test
 	def test_can_find_all_by_last_name_case_insensitive
 		assert_equal 1, cr.find_all_by_last_name("conSidine").count
 	end
+
 end
